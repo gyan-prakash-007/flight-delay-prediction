@@ -37,12 +37,24 @@
 
 ```text
 flight-delay-prediction/
+│
 ├── data/
+│   ├── flights.csv
 │   ├── airlines.csv
-│   ├── airports.csv
-│   └── flights.csv
-├── src/
-│   └── inspect_data.py
-├── .venv/
+│   └── airports.csv
+│
+├── flight_delay_prediction.ipynb   ← EVERYTHING
+│
+├── models/
+│   ├── logistic_regression.pkl
+│   ├── decision_tree.pkl
+│   └── random_forest.pkl
+│
+├── plots/
+│
+├── gui/
+│   └── prediction_gui.py
+│
 ├── .gitignore
-└── progress.md
+├── progress.md
+└── README.md
