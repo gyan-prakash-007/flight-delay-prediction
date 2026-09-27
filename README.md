@@ -241,22 +241,24 @@ Two arrival delay graphs have been created so far.
 The first graph shows the complete distribution of arrival delays.
 
 ```python
-plt.figure(figsize=(10, 6))
+import os
+arrival_delay = flights[(flights["CANCELLED"]==0)& (flights["ARRIVAL_DELAY"].notna())]["ARRIVAL_DELAY"]
 
-plt.hist(arrival_delay, bins=100)
+plt.Figure(figsize=(10,6))
 
-plt.xlabel("Arrival Delay (minutes)")
-plt.ylabel("Number of Flights")
-plt.title("Distribution of Flight Arrival Delays")
+plt.hist(arrival_delay,bins=100)
 
-plt.savefig(
-    "plots/arrival_delay_distribution.png",
-    dpi=300,
-    bbox_inches="tight"
-)
+plt.xlabel("arrival delay in min")
+plt.ylabel("number of flights")
+plt.title("distribution of flight delays")
 
+plt.savefig("plots/arrival_delay_distribution.png", dpi=300, bbox_inches="tight")
 plt.show()
 ```
+
+![Arrival Delay Distribution](plots/arrival_delay_distribution.png)
+
+Saved plot path: `plots/arrival_delay_distribution.png`
 
 **Observation:** The distribution is strongly right skewed. Most flights are concentrated around relatively small delays, while a smaller number of flights experience very large delays.
 
@@ -271,18 +273,17 @@ plt.hist(arrival_delay, bins=100)
 
 plt.xlim(-50, 200)
 
-plt.xlabel("Arrival Delay (minutes)")
-plt.ylabel("Number of Flights")
-plt.title("Distribution of Flight Arrival Delays (-50 to 200 Minutes)")
-
-plt.savefig(
-    "plots/arrival_delay_distribution_zoomed.png",
-    dpi=300,
-    bbox_inches="tight"
-)
+plt.xlabel("arival delay in min")
+plt.ylabel("number of Flights")
+plt.title("distribution of flight delays between -50 to 200")
+plt.savefig("plots/arrival_delay_distribution_zoomed.png", dpi=300, bbox_inches="tight")
 
 plt.show()
 ```
+
+![Arrival Delay Distribution Zoomed](plots/arrival_delay_distribution_zoomed.png)
+
+Saved plot path: `plots/arrival_delay_distribution_zoomed.png`
 
 **Observation:** The zoomed graph makes the main concentration of flight delays easier to observe. Most flights are relatively close to their scheduled arrival time, while a smaller number experience much larger delays.
 
