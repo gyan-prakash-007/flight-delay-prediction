@@ -1,616 +1,614 @@
 # Flight Delay Prediction Using Machine Learning
 
-![Python](https://img.shields.io/badge/Python-3.14.6-8A2BE2?style=for-the-badge&logo=python&logoColor=white)
-![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-9370DB?style=for-the-badge&logo=pandas&logoColor=white)
-![NumPy](https://img.shields.io/badge/NumPy-Numerical%20Computing-7B68EE?style=for-the-badge&logo=numpy&logoColor=white)
-![Scikit--learn](https://img.shields.io/badge/Scikit--learn-Machine%20Learning-8B5CF6?style=for-the-badge&logo=scikit-learn&logoColor=white)
-![Status](https://img.shields.io/badge/Status-In%20Progress-A855F7?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.10+-8b5cf6?style=for-the-badge&logo=python&logoColor=white)
+![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.x-7c3aed?style=for-the-badge&logo=scikit-learn&logoColor=white)
+![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-6d28d9?style=for-the-badge&logo=jupyter&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Complete-5b21b6?style=for-the-badge)
 
-A machine learning project to predict whether a flight will be delayed by 15 minutes or more, using historical flight data from 2015.
+A machine learning-based binary classification system that predicts whether a flight is likely to be delayed, built on 539,383 historical flight records. The project covers the complete ML workflow: exploratory data analysis, feature engineering, preprocessing, model training, evaluation, model persistence, and a Tkinter GUI.
 
-The project is being developed using Python, Pandas, NumPy, Matplotlib, and Scikit-learn. The complete workflow is being built inside a single Jupyter Notebook: `flight_delay_prediction.ipynb`.
+---
+
+## Abstract
+
+Flight delays are a persistent challenge in the aviation industry. They affect passengers, airline operations, and airport scheduling. This project builds a binary classifier using historical flight data to predict delay status before departure.
+
+The preprocessing pipeline applies cyclical transformation to departure time, One-Hot Encoding to categorical features, and StandardScaler to numerical features, producing a 614-feature matrix. Five classification algorithms are formally trained and evaluated using Accuracy, Precision, Recall, F1-score, and ROC-AUC. The trained models and preprocessor are saved with Joblib and connected to a lightweight Tkinter GUI for interactive predictions.
 
 ---
 
 ## Table of Contents
 
-- [Project Objective](#project-objective)
-- [Dataset](#dataset)
-- [Technologies Used](#technologies-used)
-- [Project Structure](#project-structure)
-- [Data Loading](#data-loading)
-- [Dataset Inspection](#dataset-inspection)
-- [Missing Value Analysis](#missing-value-analysis)
-- [Cancellation Analysis](#cancellation-analysis)
-- [Arrival Delay Analysis](#arrival-delay-analysis)
-- [Exploratory Data Analysis](#exploratory-data-analysis)
-- [Target Variable](#target-variable)
-- [Removing Missing Arrival Delays](#removing-missing-arrival-delays)
-- [Feature Selection](#feature-selection)
-- [Avoiding Data Leakage](#avoiding-data-leakage)
-- [Data Cleaning](#data-cleaning)
-- [Creating X and y](#creating-x-and-y)
-- [Train-Test Split](#train-test-split)
-- [Categorical Features](#categorical-features)
-- [One-Hot Encoding Setup](#one-hot-encoding-setup)
-- [Current Understanding](#current-understanding)
-- [Current Progress](#current-progress)
-- [Development Log](#development-log)
-- [Current Status](#current-status)
+1. [Problem Statement](#1-problem-statement)
+2. [Dataset](#2-dataset)
+3. [Exploratory Data Analysis](#3-exploratory-data-analysis)
+4. [Feature Engineering](#4-feature-engineering)
+5. [Preprocessing](#5-preprocessing)
+6. [Model Training](#6-model-training)
+7. [Model Evaluation](#7-model-evaluation)
+8. [Model Persistence](#8-model-persistence)
+9. [Prediction on New Data](#9-prediction-on-new-data)
+10. [Graphical User Interface](#10-graphical-user-interface)
+11. [Project Structure](#11-project-structure)
+12. [Technologies Used](#12-technologies-used)
+13. [Setup and Running](#13-setup-and-running)
+14. [Conclusion](#14-conclusion)
 
 ---
 
-## Project Objective
+## 1. Problem Statement
 
-The goal of this project is to predict whether a flight will experience an arrival delay of 15 minutes or more. This is treated as a binary classification problem.
+The problem is formulated as a binary classification task.
 
-```text
-0 -> Not delayed
-1 -> Delayed by 15 minutes or more
+Given pre-departure flight information, the system predicts:
+
+```
+0 → No Delay
+1 → Delay
 ```
 
-The model will use information that is available before the flight, while avoiding information that would cause data leakage.
+Input features available before the flight:
+
+- Airline
+- Departure airport
+- Destination airport
+- Day of the week
+- Scheduled departure time
+- Flight duration
 
 ---
 
-## Dataset
+## 2. Dataset
 
-The project uses the 2015 Flight Delays and Cancellations dataset. The dataset contains:
+**Source:** Airlines dataset  
+**Size:** 539,383 flight records, 9 columns
+
+### 2.1 Features
+
+| Feature | Description | Type |
+|---|---|---|
+| `id` | Unique record identifier | Identifier |
+| `Airline` | Airline code | Categorical |
+| `Flight` | Flight number | Numerical |
+| `AirportFrom` | Departure airport code | Categorical |
+| `AirportTo` | Destination airport code | Categorical |
+| `DayOfWeek` | Day of the week (1-7) | Categorical |
+| `Time` | Scheduled departure time in minutes from midnight | Numerical |
+| `Length` | Flight duration in minutes | Numerical |
+| `Delay` | Delay status — target variable | Binary |
+
+Sample records:
 
 ```text
-flights.csv
-airlines.csv
-airports.csv
+id,Airline,Flight,AirportFrom,AirportTo,DayOfWeek,Time,Length,Delay
+1,CO,269,SFO,IAH,3,15,205,1
+2,US,1558,PHX,CLT,3,15,222,1
+3,AA,2400,LAX,DFW,3,20,165,1
+4,AA,2466,SFO,DFW,3,20,195,1
+5,AS,108,ANC,SEA,3,30,202,0
 ```
 
-The main file used for the machine learning workflow is `flights.csv`.
+### 2.2 Target Distribution
 
-The original `flights.csv` dataset contains:
+| Delay | Flight Count | Percentage |
+|---|---:|---:|
+| 0 (No Delay) | 299,119 | 55.46% |
+| 1 (Delayed) | 240,264 | 44.54% |
 
-```text
-5,819,079 rows
-31 columns
-```
-
-Because `flights.csv` is approximately 565 MB, the `data/` directory is excluded from Git using `.gitignore`.
+Both classes have substantial representation, so the dataset is reasonably balanced.
 
 ---
 
-## Technologies Used
+## 3. Exploratory Data Analysis
 
-- Python 3.14.6
-- Pandas
-- NumPy
-- Matplotlib
-- Scikit-learn
-- Jupyter Notebook
-- VS Code
-- Git
-- GitHub
+### 3.1 Distribution of Scheduled Departure Times
 
-The project is being developed locally on an Apple Silicon Mac.
+The `Time` feature stores departure time in minutes from midnight. The histogram below shows how flights are distributed across the day.
 
----
+![Distribution of Scheduled Departure Times](plots/distribution_of_scheduled_departure_times.png)
 
-## Project Structure
+### 3.2 Delay Rate by Departure Hour
 
-```text
-flight-delay-prediction/
-
-├── data/
-│   ├── flights.csv
-│   ├── airlines.csv
-│   └── airports.csv
-│
-├── flight_delay_prediction.ipynb
-│
-├── models/
-│
-├── plots/
-│   ├── arrival_delay_distribution.png
-│   └── arrival_delay_distribution_zoomed.png
-│
-├── gui/
-│
-├── .gitignore
-├── progress.md
-└── README.md
-```
-
-The entire machine learning workflow is being developed inside `flight_delay_prediction.ipynb`.
-
----
-
-## Data Loading
-
-The dataset was loaded using Pandas.
+Departure time was converted to hours and the delay rate was calculated per hour:
 
 ```python
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
-flights = pd.read_csv("data/flights.csv")
-
-flights.head()
-```
-
-A Pandas `DtypeWarning` appeared for:
-
-```text
-ORIGIN_AIRPORT
-DESTINATION_AIRPORT
-```
-
-The warning is caused by mixed data types in these columns. The dataset loaded successfully.
-
----
-
-## Dataset Inspection
-
-The dataset shape was checked using:
-
-```python
-flights.shape
-```
-
-Result:
-
-```text
-(5819079, 31)
-```
-
-Therefore, the original dataset contains 5,819,079 flight records across 31 columns. The column names were also inspected to understand the available information.
-
----
-
-## Missing Value Analysis
-
-Missing values were checked using:
-
-```python
-flights.isnull().sum()
-```
-
-Missing value percentages were also calculated. Some columns contain a large number of missing values, for example:
-
-```text
-CANCELLATION_REASON
-WEATHER_DELAY
-AIR_SYSTEM_DELAY
-SECURITY_DELAY
-AIRLINE_DELAY
-LATE_AIRCRAFT_DELAY
-```
-
-These columns contain many missing values because the information does not apply to many flights. `ARRIVAL_DELAY` also contains missing values.
-
----
-
-## Cancellation Analysis
-
-The number of cancelled and non-cancelled flights was checked using:
-
-```python
-flights["CANCELLED"].value_counts()
-```
-
-Result:
-
-```text
-0    5729195
-1      89884
-```
-
-Therefore, there are 5,729,195 non-cancelled flights and 89,884 cancelled flights.
-
-Since cancelled flights do not have a meaningful actual arrival delay, flights without a known arrival delay were removed from the classification dataset.
-
----
-
-## Arrival Delay Analysis
-
-The arrival delay was analyzed using:
-
-```python
-arrival_delay = flights[
-    (flights["CANCELLED"] == 0) &
-    (flights["ARRIVAL_DELAY"].notna())
-]["ARRIVAL_DELAY"]
-```
-
-The statistical summary showed:
-
-```text
-Mean     approx 4.4 minutes
-Median   = -5 minutes
-Minimum  = -87 minutes
-Maximum  = 1971 minutes
-```
-
-A negative delay means that the flight arrived earlier than its scheduled arrival time. For example, a delay of -5 minutes means the flight arrived 5 minutes early, and a delay of +20 minutes means it arrived 20 minutes late.
-
----
-
-## Exploratory Data Analysis
-
-Two arrival delay graphs have been created so far.
-
-### 1. Arrival Delay Distribution
-
-The first graph shows the complete distribution of arrival delays.
-
-```python
-import os
-arrival_delay = flights[(flights["CANCELLED"]==0)& (flights["ARRIVAL_DELAY"].notna())]["ARRIVAL_DELAY"]
-
-plt.Figure(figsize=(10,6))
-
-plt.hist(arrival_delay,bins=100)
-
-plt.xlabel("arrival delay in min")
-plt.ylabel("number of flights")
-plt.title("distribution of flight delays")
-
-plt.savefig("plots/arrival_delay_distribution.png", dpi=300, bbox_inches="tight")
-plt.show()
-```
-
-![Arrival Delay Distribution](plots/arrival_delay_distribution.png)
-
-Saved plot path: `plots/arrival_delay_distribution.png`
-
-**Observation:** The distribution is strongly right skewed. Most flights are concentrated around relatively small delays, while a smaller number of flights experience very large delays.
-
-### 2. Zoomed Arrival Delay Distribution
-
-A second graph was created to focus on the more common delay range.
-
-```python
-plt.figure(figsize=(10, 6))
-
-plt.hist(arrival_delay, bins=100)
-
-plt.xlim(-50, 200)
-
-plt.xlabel("arival delay in min")
-plt.ylabel("number of Flights")
-plt.title("distribution of flight delays between -50 to 200")
-plt.savefig("plots/arrival_delay_distribution_zoomed.png", dpi=300, bbox_inches="tight")
-
-plt.show()
-```
-
-![Arrival Delay Distribution Zoomed](plots/arrival_delay_distribution_zoomed.png)
-
-Saved plot path: `plots/arrival_delay_distribution_zoomed.png`
-
-**Observation:** The zoomed graph makes the main concentration of flight delays easier to observe. Most flights are relatively close to their scheduled arrival time, while a smaller number experience much larger delays.
-
----
-
-## Target Variable
-
-A new column called `DELAYED` was created. The target is based on a 15 minute delay threshold.
-
-```python
-flights["DELAYED"] = (
-    flights["ARRIVAL_DELAY"] >= 15
-).astype(int)
-```
-
-This creates:
-
-```text
-Arrival delay < 15 minutes  -> DELAYED = 0
-Arrival delay >= 15 minutes -> DELAYED = 1
-```
-
-`astype(int)` converts `False` to `0` and `True` to `1`.
-
----
-
-## Removing Missing Arrival Delays
-
-Flights with missing `ARRIVAL_DELAY` cannot be reliably classified, so they were removed:
-
-```python
-flights = flights[
-    flights["ARRIVAL_DELAY"].notna()
-]
-```
-
-The target was then recreated. Final target distribution:
-
-```text
-DELAYED
-
-0    4650569
-1    1063439
-```
-
-Therefore, there are 4,650,569 not-delayed flights and 1,063,439 delayed flights, for a total of 5,714,008 usable flights.
-
-The delayed class represents a smaller portion of the dataset, so model evaluation will consider metrics other than accuracy as well.
-
----
-
-## Feature Selection
-
-The following 12 features were selected for the machine learning model:
-
-```python
-features = [
-    "YEAR",
-    "MONTH",
-    "DAY",
-    "DAY_OF_WEEK",
-    "AIRLINE",
-    "FLIGHT_NUMBER",
-    "ORIGIN_AIRPORT",
-    "DESTINATION_AIRPORT",
-    "SCHEDULED_DEPARTURE",
-    "SCHEDULED_TIME",
-    "DISTANCE",
-    "SCHEDULED_ARRIVAL"
-]
-```
-
-These features describe the planned flight information.
-
----
-
-## Avoiding Data Leakage
-
-Features that contain information about what happened during or after the flight were excluded. Examples include:
-
-```text
-DEPARTURE_TIME
-DEPARTURE_DELAY
-TAXI_OUT
-WHEELS_OFF
-ELAPSED_TIME
-AIR_TIME
-WHEELS_ON
-TAXI_IN
-ARRIVAL_TIME
-ARRIVAL_DELAY
-DIVERTED
-CANCELLED
-CANCELLATION_REASON
-AIR_SYSTEM_DELAY
-SECURITY_DELAY
-AIRLINE_DELAY
-LATE_AIRCRAFT_DELAY
-WEATHER_DELAY
-```
-
-These features were not selected because they would provide information that would not be available when making a pre-flight prediction. `TAIL_NUMBER` was also excluded from the initial feature set.
-
----
-
-## Data Cleaning
-
-The selected features were checked for missing values. Only 6 rows had a missing value in `SCHEDULED_TIME`. These rows were removed using:
-
-```python
-flights = flights.dropna(
-    subset=["SCHEDULED_TIME"]
+airlines["Hour"] = airlines["Time"] // 60
+
+hourly_delay_rate = (
+    airlines.groupby("Hour")["Delay"]
+    .mean() * 100
 )
 ```
 
-After this step, the selected features had no missing values.
+![Delay Rate vs Scheduled Departure Time](plots/delay_rate_vs_scheduled_departure_time.png)
 
----
-
-## Creating X and y
-
-The input features and target variable were separated.
+### 3.3 Delay Rate by Airline
 
 ```python
-X = flights[features]
-
-y = flights["DELAYED"]
+airline_delay_rate = (
+    airlines.groupby("Airline")["Delay"]
+    .mean()
+    .sort_values(ascending=False) * 100
+)
 ```
 
-Where `X` is the input features and `y` is the target variable.
+![Delay Rate by Airline](plots/delay_rate_by_airline.png)
 
-The resulting shapes were:
+### 3.4 Delay Rate by Day of Week
 
-```text
-X = (5714008, 12)
-y = (5714008,)
+```python
+day_delay_rate = (
+    airlines.groupby("DayOfWeek")["Delay"]
+    .mean() * 100
+)
 ```
 
-This means the dataset has 5,714,008 flight records and 12 input features.
+![Delay Rate by Day of Week](plots/delay_rate_by_day_of_week.png)
+
+### 3.5 Delay Rate by Flight Duration
+
+Flight duration was divided into bins to examine the relationship with delay rate:
+
+```python
+length_bins = pd.cut(
+    airlines["Length"],
+    bins=[0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660],
+    right=False
+)
+
+length_delay_rate = (
+    airlines.groupby(length_bins, observed=True)["Delay"]
+    .mean() * 100
+)
+```
+
+![Delay Rate by Flight Duration](plots/delay_rate_by_flight_duration.png)
+
+### 3.6 Delay Rate by Departure Airport
+
+The ten busiest departure airports were filtered and their delay rates were compared:
+
+```python
+top_departure_airports = (
+    airlines["AirportFrom"].value_counts().head(10).index
+)
+
+airport_delay_rate = (
+    airlines[airlines["AirportFrom"].isin(top_departure_airports)]
+    .groupby("AirportFrom")["Delay"]
+    .mean()
+    .sort_values(ascending=False) * 100
+)
+```
+
+![Delay Rate by Departure Airport](plots/delay_rate_by_departure_airport.png)
 
 ---
 
-## Train-Test Split
+## 4. Feature Engineering
 
-The dataset was divided into training and testing data, using an 80 percent training and 20 percent testing split.
+### 4.1 Cyclical Transformation of Departure Time
+
+Departure time is a cyclical variable. A flight at 23:50 and a flight at 00:10 are 20 minutes apart, but treating `Time` as a plain integer creates an artificial gap of nearly 1440 units between them.
+
+To encode the circular nature of time, sine and cosine transformations were applied:
+
+```python
+airlines["Time_sin"] = np.sin(2 * np.pi * airlines["Time"] / 1440)
+airlines["Time_cos"] = np.cos(2 * np.pi * airlines["Time"] / 1440)
+```
+
+This replaces the single `Time` feature with two continuous features, `Time_sin` and `Time_cos`, that correctly represent the proximity of times near midnight.
+
+### 4.2 Feature Selection
+
+The following columns were dropped before training:
+
+```python
+airlines.drop(columns=["id", "Flight", "Time", "Hour"], inplace=True)
+```
+
+| Column | Reason for removal |
+|---|---|
+| `id` | Record identifier only, carries no predictive information |
+| `Flight` | Flight number does not generalize across records |
+| `Time` | Replaced by `Time_sin` and `Time_cos` |
+| `Hour` | Created only for EDA, redundant with cyclical features |
+
+After this step:
+
+```text
+X shape: (539383, 7)
+y shape: (539383,)
+```
+
+---
+
+## 5. Preprocessing
+
+### 5.1 Train-Test Split
+
+An 80/20 stratified split was applied:
 
 ```python
 from sklearn.model_selection import train_test_split
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
+    X, y,
     test_size=0.2,
     random_state=42,
     stratify=y
 )
 ```
 
-The resulting dataset sizes were:
+| Split | Shape |
+|---|---:|
+| `X_train` | 431,506 x 7 |
+| `X_test` | 107,877 x 7 |
 
-```text
-Training features -> 4,571,206 x 12
-Testing features  -> 1,142,802 x 12
-Training target   -> 4,571,206
-Testing target    -> 1,142,802
-```
+`stratify=y` ensures both splits preserve the original 55/45 class ratio.
 
-**`random_state=42`** makes the split repeatable. Running the same code again produces the same split.
+### 5.2 ColumnTransformer Pipeline
 
-**`stratify=y`** helps maintain the same proportion of delayed and non-delayed flights in both the training and testing datasets.
+Two transformations were applied depending on feature type:
 
----
-
-## Categorical Features
-
-Three selected features contain categorical values:
-
-```text
-AIRLINE
-ORIGIN_AIRPORT
-DESTINATION_AIRPORT
-```
-
-For example, `AIRLINE` contains values like `AA`, `DL`, `UA`, `AS`.
-
-Machine learning models cannot directly use these text categories in their raw form, so One-Hot Encoding will be used.
-
----
-
-## One-Hot Encoding Setup
-
-The encoder was initialized using:
+| Feature Type | Features | Transformation |
+|---|---|---|
+| Categorical | `Airline`, `AirportFrom`, `AirportTo`, `DayOfWeek` | OneHotEncoder |
+| Numerical | `Length`, `Time_sin`, `Time_cos` | StandardScaler |
 
 ```python
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-categorical_features = [
-    "AIRLINE",
-    "ORIGIN_AIRPORT",
-    "DESTINATION_AIRPORT"
-]
-
-encoder = OneHotEncoder(
-    handle_unknown="ignore",
-    sparse_output=True
+preprocessor = ColumnTransformer(
+    transformers=[
+        (
+            "categorical",
+            OneHotEncoder(handle_unknown="ignore"),
+            ["Airline", "AirportFrom", "AirportTo", "DayOfWeek"]
+        ),
+        (
+            "numerical",
+            StandardScaler(),
+            ["Length", "Time_sin", "Time_cos"]
+        )
+    ]
 )
 ```
 
-The actual transformation of the training and testing data has not been completed yet. This is the next step of the project.
+The preprocessor was fitted only on training data, then applied to both splits:
+
+```python
+X_train_processed = preprocessor.fit_transform(X_train)
+X_test_processed  = preprocessor.transform(X_test)
+```
+
+After preprocessing:
+
+```text
+X_train_processed: (431506, 614)
+X_test_processed:  (107877, 614)
+```
+
+One-Hot Encoding expanded the categorical columns from 4 to 611 binary columns. Together with the 3 scaled numerical features, the final feature matrix has **614 features**.
 
 ---
 
-## Current Understanding
+## 6. Model Training
 
-**Dataset:** The original dataset contains more than 5.8 million flight records.
+Five classification models were formally trained and compared on the same preprocessed dataset.
 
-**Arrival Delays:** Arrival delays are strongly right skewed. Most flights have relatively small delays, while a smaller number experience very large delays.
+### 6.1 Logistic Regression
 
-**Target:** The project uses a 15 minute threshold, where 0 means a delay under 15 minutes and 1 means a delay of 15 minutes or more.
+```python
+from sklearn.linear_model import LogisticRegression
 
-**Target Distribution:**
-
-```text
-Not delayed -> 4,650,569
-Delayed     -> 1,063,439
+logistic_model = LogisticRegression(max_iter=1000)
+logistic_model.fit(X_train_processed, y_train)
 ```
 
-**Data Leakage:** Information that would only be available during or after the flight is excluded from the input features.
+### 6.2 Decision Tree
 
-**Features:** 12 pre-flight features have been selected for the initial machine learning workflow.
+```python
+from sklearn.tree import DecisionTreeClassifier
 
----
-
-## Current Progress
-
-### Completed
-
-- Project setup
-- Python virtual environment
-- GitHub repository
-- Dataset download
-- Dataset organization
-- Jupyter Notebook setup
-- Dataset loading
-- Dataset inspection
-- Missing value analysis
-- Cancellation analysis
-- Arrival delay analysis
-- Initial exploratory data analysis
-- Two arrival delay graphs
-- Target variable creation
-- Missing target removal
-- Feature selection
-- Data leakage prevention
-- Missing value cleaning
-- Creation of `X` and `y`
-- Train-test split
-- Identification of categorical features
-- One-Hot Encoder setup
-
-### Currently Working On
-
-```text
-One-Hot Encoding
+decision_tree = DecisionTreeClassifier(random_state=42)
+decision_tree.fit(X_train_processed, y_train)
 ```
 
-### Next Steps
+### 6.3 Random Forest
 
-```text
-Complete One-Hot Encoding
-        |
-Prepare final training data
-        |
-Additional EDA
-        |
-Train 5 ML models
-        |
-Evaluate models
-        |
-Select top 3 models
-        |
-Average predicted probabilities
-        |
-Final prediction
-        |
-Save models
-        |
-Build GUI
+```python
+from sklearn.ensemble import RandomForestClassifier
+
+random_forest = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42,
+    n_jobs=-1
+)
+random_forest.fit(X_train_processed, y_train)
+```
+
+### 6.4 K-Nearest Neighbors
+
+```python
+from sklearn.neighbors import KNeighborsClassifier
+
+knn_model = KNeighborsClassifier(n_neighbors=5, n_jobs=-1)
+knn_model.fit(X_train_processed, y_train)
+```
+
+### 6.5 Support Vector Machine
+
+A linear SVM was trained using `LinearSVC`:
+
+```python
+from sklearn.svm import LinearSVC
+
+svm_model = LinearSVC(random_state=42, max_iter=1000)
+svm_model.fit(X_train_processed, y_train)
 ```
 
 ---
 
-## Development Log
+## 7. Model Evaluation
 
-### Day 1 - September 26, 2026
+All models were evaluated on the unseen test set using five metrics.
 
-Completed:
+### 7.1 Results
 
-- Project setup
-- Python environment
-- GitHub repository
-- Dataset download
-- Dataset organization
-- `.gitignore`
-- Jupyter Notebook setup
+| Model | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
+|---|---:|---:|---:|---:|---:|
+| Logistic Regression | 65.04% | 63.68% | 50.05% | 56.05% | 69.70% |
+| Decision Tree | 60.76% | 57.22% | 47.20% | 51.73% | 61.30% |
+| Random Forest | 61.53% | 57.11% | 54.74% | 55.90% | 65.18% |
+| KNN | 63.01% | 59.10% | 55.10% | 57.03% | 66.16% |
+| SVM | 65.03% | 63.90% | 49.42% | 55.73% | 69.68% |
 
-### Day 2 - September 27, 2026
+### 7.2 Accuracy Comparison
 
-Completed:
+![Model Accuracy Comparison](plots/model_accuracy_comparison.png)
 
-- Dataset inspection
-- Missing value analysis
-- Cancellation analysis
-- Arrival delay analysis
-- Initial EDA
-- Arrival delay graphs
-- Target variable creation
-- Feature selection
-- Data leakage prevention
-- Data cleaning
-- `X` and `y` creation
-- Train-test split
-- Categorical feature identification
-- One-Hot Encoder setup
+### 7.3 Overall Performance Comparison
+
+![Model Performance Comparison](plots/model_performance_comparison.png)
+
+### 7.4 Confusion Matrix (Logistic Regression)
+
+```python
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+cm = confusion_matrix(y_test, y_pred_logistic)
+disp = ConfusionMatrixDisplay(
+    confusion_matrix=cm,
+    display_labels=["no delay", "delay"]
+)
+disp.plot()
+```
+
+![Logistic Regression Confusion Matrix](plots/logistic_regression_confusion_matrix.png)
+
+### 7.5 ROC Curve (Logistic Regression)
+
+```python
+from sklearn.metrics import roc_curve, roc_auc_score
+
+fpr, tpr, thresholds = roc_curve(y_test, y_prob_logistic)
+roc_auc = roc_auc_score(y_test, y_prob_logistic)
+```
+
+![Logistic Regression ROC Curve](plots/logistic_regression_roc_curve.png)
+
+ROC-AUC for Logistic Regression: **0.697**
+
+### 7.6 Analysis
+
+Logistic Regression and SVM achieved similar overall performance with accuracy and ROC-AUC both near 65% and 69.7% respectively. KNN achieved the highest F1-score (57.03%) among the five models, indicating a better balance between precision and recall. Decision Tree produced the lowest scores across all metrics.
+
+The relatively modest accuracy across all models reflects that the available features (airline, airports, day, time, duration) provide a useful but incomplete picture of actual delay causes, many of which depend on real-time operational factors not present in this dataset.
 
 ---
 
-## Current Status
+## 8. Model Persistence
 
-The project has completed the initial data analysis and preparation stage. The next task is to complete categorical encoding and prepare the dataset for machine learning model training.
+The preprocessor and all five trained models were saved using Joblib:
+
+```python
+import joblib
+
+joblib.dump(preprocessor,   "models/preprocessor.pkl")
+joblib.dump(logistic_model, "models/logistic_regression.pkl")
+joblib.dump(decision_tree,  "models/decision_tree.pkl")
+joblib.dump(random_forest,  "models/random_forest.pkl")
+joblib.dump(knn_model,      "models/knn.pkl")
+joblib.dump(svm_model,      "models/svm.pkl")
+```
+
+Loading them back:
+
+```python
+preprocessor_loaded  = joblib.load("models/preprocessor.pkl")
+logistic_loaded      = joblib.load("models/logistic_regression.pkl")
+decision_tree_loaded = joblib.load("models/decision_tree.pkl")
+random_forest_loaded = joblib.load("models/random_forest.pkl")
+knn_loaded           = joblib.load("models/knn.pkl")
+svm_loaded           = joblib.load("models/svm.pkl")
+```
+
+Saving the preprocessor alongside the models is critical. Any new input must pass through the same fitted OneHotEncoder and StandardScaler before it reaches the model. Using a freshly fitted preprocessor would produce incorrect feature vectors.
+
+---
+
+## 9. Prediction on New Data
+
+A new flight is represented as a DataFrame matching the training feature schema:
+
+```python
+input_data = pd.DataFrame({
+    "Airline":    ["WN"],
+    "AirportFrom": ["ATL"],
+    "AirportTo":  ["LAX"],
+    "DayOfWeek":  [1],
+    "Length":     [240],
+    "Time_sin":   [np.sin(2 * np.pi * 900 / 1440)],
+    "Time_cos":   [np.cos(2 * np.pi * 900 / 1440)]
+})
+```
+
+The saved preprocessor transforms it:
+
+```python
+input_processed = preprocessor_loaded.transform(input_data)
+```
+
+The model then predicts:
+
+```python
+prediction        = logistic_loaded.predict(input_processed)[0]
+delay_probability = logistic_loaded.predict_proba(input_processed)[0][1]
+
+print("Prediction:", "Delayed" if prediction == 1 else "Not Delayed")
+print(f"Probability of delay: {delay_probability:.2%}")
+```
+
+---
+
+## 10. Graphical User Interface
+
+A Tkinter-based GUI was built to allow users to interact with the prediction system without opening the notebook.
+
+![Flight Delay Prediction GUI](demo/gui.png)
+
+The GUI accepts flight details through form inputs, builds the feature vector, applies the saved preprocessor, and displays the predicted delay status and probability.
+
+### GUI Workflow
+
+```
+Flight Information Input
+         |
+         v
+   Input Validation
+         |
+         v
+  Feature Construction
+   (Time -> Time_sin, Time_cos)
+         |
+         v
+ Saved Preprocessor Transform
+         |
+         v
+  Trained Model Prediction
+         |
+         v
+  Display: Delayed / Not Delayed
+         + Delay Probability
+```
+
+To launch:
+
+```bash
+python gui.py
+```
+
+---
+
+## 11. Project Structure
+
+```text
+flight-delay-prediction/
+|
+|-- data/
+|   `-- Airlines.csv
+|
+|-- demo/
+|   `-- gui.png
+|
+|-- models/
+|   |-- preprocessor.pkl
+|   |-- logistic_regression.pkl
+|   |-- decision_tree.pkl
+|   |-- random_forest.pkl
+|   |-- knn.pkl
+|   `-- svm.pkl
+|
+|-- plots/
+|   |-- distribution_of_scheduled_departure_times.png
+|   |-- delay_rate_vs_scheduled_departure_time.png
+|   |-- delay_rate_by_airline.png
+|   |-- delay_rate_by_day_of_week.png
+|   |-- delay_rate_by_flight_duration.png
+|   |-- delay_rate_by_departure_airport.png
+|   |-- logistic_regression_confusion_matrix.png
+|   |-- logistic_regression_roc_curve.png
+|   |-- model_accuracy_comparison.png
+|   `-- model_performance_comparison.png
+|
+|-- flight_delay_prediction.ipynb
+|-- gui.py
+|-- cli.py
+|-- progress.md
+|-- .gitignore
+`-- README.md
+```
+
+`Airlines.csv` and the `models/` directory are excluded from the repository via `.gitignore` due to file size.
+
+---
+
+## 12. Technologies Used
+
+| Technology | Version | Purpose |
+|---|---|---|
+| Python | 3.10+ | Core language |
+| Pandas | Latest | Data loading and manipulation |
+| NumPy | Latest | Numerical computation and feature engineering |
+| Matplotlib | Latest | Data visualization |
+| Scikit-learn | Latest | Preprocessing, ML models, evaluation |
+| Joblib | Latest | Model serialization |
+| Tkinter | Built-in | Graphical user interface |
+| Jupyter Notebook | Latest | Development and experimentation |
+
+---
+
+## 13. Setup and Running
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate       # Linux / macOS
+.venv\Scripts\activate          # Windows
+```
+
+Install dependencies:
+
+```bash
+pip install pandas numpy matplotlib scikit-learn joblib jupyter
+```
+
+Open the notebook:
+
+```bash
+jupyter notebook
+```
+
+Run `flight_delay_prediction.ipynb` from top to bottom to reproduce the full workflow.
+
+To launch the GUI (after running the notebook to generate the model files):
+
+```bash
+python gui.py
+```
+
+---
+
+## 14. Conclusion
+
+This project demonstrates a complete supervised machine learning pipeline for flight delay prediction.
+
+The pipeline begins with exploratory analysis of 539,383 flight records to understand delay patterns across airlines, departure times, days of the week, and airports. Feature engineering captures the cyclical nature of departure time through sine/cosine transformation. The preprocessing pipeline applies One-Hot Encoding and StandardScaler, expanding the input to 614 features.
+
+Five classification algorithms are trained on the same processed dataset and evaluated using Accuracy, Precision, Recall, F1-score, and ROC-AUC. Logistic Regression and SVM produced the highest accuracy and ROC-AUC, while KNN achieved the best F1-score balance. The trained models and preprocessor are serialized with Joblib, enabling reuse without retraining. A Tkinter GUI connects the saved models to an interactive prediction interface.
+
+The project demonstrates the full progression from raw flight data to an evaluated, persistent, and user-facing machine learning application.
