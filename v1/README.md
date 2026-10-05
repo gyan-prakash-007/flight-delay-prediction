@@ -105,7 +105,7 @@ Both classes have substantial representation, so the dataset is reasonably balan
 
 The `Time` feature stores departure time in minutes from midnight. The histogram below shows how flights are distributed across the day.
 
-![Distribution of Scheduled Departure Times](plots/distribution_of_scheduled_departure_times.png)
+![Distribution of Scheduled Departure Times](v1/plots/distribution_of_scheduled_departure_times.png)
 
 ### 3.2 Delay Rate by Departure Hour
 
@@ -120,7 +120,7 @@ hourly_delay_rate = (
 )
 ```
 
-![Delay Rate vs Scheduled Departure Time](plots/delay_rate_vs_scheduled_departure_time.png)
+![Delay Rate vs Scheduled Departure Time](v1/plots/delay_rate_vs_scheduled_departure_time.png)
 
 ### 3.3 Delay Rate by Airline
 
@@ -132,7 +132,7 @@ airline_delay_rate = (
 )
 ```
 
-![Delay Rate by Airline](plots/delay_rate_by_airline.png)
+![Delay Rate by Airline](v1/plots/delay_rate_by_airline.png)
 
 ### 3.4 Delay Rate by Day of Week
 
@@ -143,7 +143,7 @@ day_delay_rate = (
 )
 ```
 
-![Delay Rate by Day of Week](plots/delay_rate_by_day_of_week.png)
+![Delay Rate by Day of Week](v1/plots/delay_rate_by_day_of_week.png)
 
 ### 3.5 Delay Rate by Flight Duration
 
@@ -162,7 +162,7 @@ length_delay_rate = (
 )
 ```
 
-![Delay Rate by Flight Duration](plots/delay_rate_by_flight_duration.png)
+![Delay Rate by Flight Duration](v1/plots/delay_rate_by_flight_duration.png)
 
 ### 3.6 Delay Rate by Departure Airport
 
@@ -181,7 +181,7 @@ airport_delay_rate = (
 )
 ```
 
-![Delay Rate by Departure Airport](plots/delay_rate_by_departure_airport.png)
+![Delay Rate by Departure Airport](v1/plots/delay_rate_by_departure_airport.png)
 
 ---
 
@@ -368,11 +368,11 @@ All models were evaluated on the unseen test set using five metrics.
 
 ### 7.2 Accuracy Comparison
 
-![Model Accuracy Comparison](plots/model_accuracy_comparison.png)
+![Model Accuracy Comparison](v1/plots/model_accuracy_comparison.png)
 
 ### 7.3 Overall Performance Comparison
 
-![Model Performance Comparison](plots/model_performance_comparison.png)
+![Model Performance Comparison](v1/plots/model_performance_comparison.png)
 
 ### 7.4 Confusion Matrix (Logistic Regression)
 
@@ -387,7 +387,7 @@ disp = ConfusionMatrixDisplay(
 disp.plot()
 ```
 
-![Logistic Regression Confusion Matrix](plots/logistic_regression_confusion_matrix.png)
+![Logistic Regression Confusion Matrix](v1/plots/logistic_regression_confusion_matrix.png)
 
 ### 7.5 ROC Curve (Logistic Regression)
 
@@ -398,7 +398,7 @@ fpr, tpr, thresholds = roc_curve(y_test, y_prob_logistic)
 roc_auc = roc_auc_score(y_test, y_prob_logistic)
 ```
 
-![Logistic Regression ROC Curve](plots/logistic_regression_roc_curve.png)
+![Logistic Regression ROC Curve](v1/plots/logistic_regression_roc_curve.png)
 
 ROC-AUC for Logistic Regression: **0.697**
 
