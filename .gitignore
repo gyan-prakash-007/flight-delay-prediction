@@ -2,7 +2,12 @@
 __pycache__/
 *.pyc
 .DS_Store
-data/models/random_forest.pkl
+
+
+**/data/*.csv
+
+
+**/models/*.pkl
+
+
 tempCodeRunnerFile.py
-models/*.pkl
-data/*.csv
