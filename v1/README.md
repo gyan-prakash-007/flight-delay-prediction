@@ -7,6 +7,8 @@
 
 A machine learning-based binary classification system that predicts whether a flight is likely to be delayed, built on 539,383 historical flight records. The project covers the complete ML workflow: exploratory data analysis, feature engineering, preprocessing, model training, evaluation, model persistence, and a Tkinter GUI.
 
+> This is **Version 1** of the project. See the [root README](../README.md) for the full overview of both versions, and [Version 2](../v2/README.md) for the improved system that adds weather data and an ensemble model.
+
 ---
 
 ## Abstract
@@ -75,7 +77,7 @@ Input features available before the flight:
 | `DayOfWeek` | Day of the week (1-7) | Categorical |
 | `Time` | Scheduled departure time in minutes from midnight | Numerical |
 | `Length` | Flight duration in minutes | Numerical |
-| `Delay` | Delay status — target variable | Binary |
+| `Delay` | Delay status (target variable) | Binary |
 
 Sample records:
 
@@ -105,7 +107,7 @@ Both classes have substantial representation, so the dataset is reasonably balan
 
 The `Time` feature stores departure time in minutes from midnight. The histogram below shows how flights are distributed across the day.
 
-![Distribution of Scheduled Departure Times](v1/plots/distribution_of_scheduled_departure_times.png)
+![Distribution of Scheduled Departure Times](plots/distribution_of_scheduled_departure_times.png)
 
 ### 3.2 Delay Rate by Departure Hour
 
@@ -120,7 +122,7 @@ hourly_delay_rate = (
 )
 ```
 
-![Delay Rate vs Scheduled Departure Time](v1/plots/delay_rate_vs_scheduled_departure_time.png)
+![Delay Rate vs Scheduled Departure Time](plots/delay_rate_vs_scheduled_departure_time.png)
 
 ### 3.3 Delay Rate by Airline
 
@@ -132,7 +134,7 @@ airline_delay_rate = (
 )
 ```
 
-![Delay Rate by Airline](v1/plots/delay_rate_by_airline.png)
+![Delay Rate by Airline](plots/delay_rate_by_airline.png)
 
 ### 3.4 Delay Rate by Day of Week
 
@@ -143,7 +145,7 @@ day_delay_rate = (
 )
 ```
 
-![Delay Rate by Day of Week](v1/plots/delay_rate_by_day_of_week.png)
+![Delay Rate by Day of Week](plots/delay_rate_by_day_of_week.png)
 
 ### 3.5 Delay Rate by Flight Duration
 
@@ -162,7 +164,7 @@ length_delay_rate = (
 )
 ```
 
-![Delay Rate by Flight Duration](v1/plots/delay_rate_by_flight_duration.png)
+![Delay Rate by Flight Duration](plots/delay_rate_by_flight_duration.png)
 
 ### 3.6 Delay Rate by Departure Airport
 
@@ -181,7 +183,7 @@ airport_delay_rate = (
 )
 ```
 
-![Delay Rate by Departure Airport](v1/plots/delay_rate_by_departure_airport.png)
+![Delay Rate by Departure Airport](plots/delay_rate_by_departure_airport.png)
 
 ---
 
@@ -368,11 +370,11 @@ All models were evaluated on the unseen test set using five metrics.
 
 ### 7.2 Accuracy Comparison
 
-![Model Accuracy Comparison](v1/plots/model_accuracy_comparison.png)
+![Model Accuracy Comparison](plots/model_accuracy_comparison.png)
 
 ### 7.3 Overall Performance Comparison
 
-![Model Performance Comparison](v1/plots/model_performance_comparison.png)
+![Model Performance Comparison](plots/model_performance_comparison.png)
 
 ### 7.4 Confusion Matrix (Logistic Regression)
 
@@ -387,7 +389,7 @@ disp = ConfusionMatrixDisplay(
 disp.plot()
 ```
 
-![Logistic Regression Confusion Matrix](v1/plots/logistic_regression_confusion_matrix.png)
+![Logistic Regression Confusion Matrix](plots/logistic_regression_confusion_matrix.png)
 
 ### 7.5 ROC Curve (Logistic Regression)
 
@@ -398,7 +400,7 @@ fpr, tpr, thresholds = roc_curve(y_test, y_prob_logistic)
 roc_auc = roc_auc_score(y_test, y_prob_logistic)
 ```
 
-![Logistic Regression ROC Curve](v1/plots/logistic_regression_roc_curve.png)
+![Logistic Regression ROC Curve](plots/logistic_regression_roc_curve.png)
 
 ROC-AUC for Logistic Regression: **0.697**
 
@@ -478,7 +480,7 @@ print(f"Probability of delay: {delay_probability:.2%}")
 
 A Tkinter-based GUI was built to allow users to interact with the prediction system without opening the notebook.
 
-![Flight Delay Prediction GUI](demo/gui.png)
+![Flight Delay Prediction GUI](plots/gui.png)
 
 The GUI accepts flight details through form inputs, builds the feature vector, applies the saved preprocessor, and displays the predicted delay status and probability.
 
@@ -505,7 +507,7 @@ Flight Information Input
          + Delay Probability
 ```
 
-To launch:
+To launch, from inside the `v1` folder:
 
 ```bash
 python gui.py
@@ -516,13 +518,10 @@ python gui.py
 ## 11. Project Structure
 
 ```text
-flight-delay-prediction/
+v1/
 |
 |-- data/
 |   `-- Airlines.csv
-|
-|-- demo/
-|   `-- gui.png
 |
 |-- models/
 |   |-- preprocessor.pkl
@@ -542,13 +541,12 @@ flight-delay-prediction/
 |   |-- logistic_regression_confusion_matrix.png
 |   |-- logistic_regression_roc_curve.png
 |   |-- model_accuracy_comparison.png
-|   `-- model_performance_comparison.png
+|   |-- model_performance_comparison.png
+|   `-- gui.png
 |
 |-- flight_delay_prediction.ipynb
-|-- gui.py
 |-- cli.py
-|-- progress.md
-|-- .gitignore
+|-- gui.py
 `-- README.md
 ```
 
@@ -573,9 +571,12 @@ flight-delay-prediction/
 
 ## 13. Setup and Running
 
-Create and activate a virtual environment:
+Clone the repository, then create and activate a virtual environment at the repository root:
 
 ```bash
+git clone https://github.com/gyan-prakash-007/flight-delay-prediction.git
+cd flight-delay-prediction
+
 python3 -m venv .venv
 source .venv/bin/activate       # Linux / macOS
 .venv\Scripts\activate          # Windows
@@ -587,18 +588,22 @@ Install dependencies:
 pip install pandas numpy matplotlib scikit-learn joblib jupyter
 ```
 
-Open the notebook:
+Download `Airlines.csv` from Kaggle and place it in `v1/data/`. The dataset is not stored in the repository.
+
+Move into the Version 1 folder and open the notebook:
 
 ```bash
+cd v1
 jupyter notebook
 ```
 
-Run `flight_delay_prediction.ipynb` from top to bottom to reproduce the full workflow.
+Run `flight_delay_prediction.ipynb` from top to bottom to reproduce the full workflow and generate the model files.
 
-To launch the GUI (after running the notebook to generate the model files):
+To launch the GUI or the CLI (after running the notebook), stay inside `v1`:
 
 ```bash
 python gui.py
+python cli.py
 ```
 
 ---
