@@ -29,7 +29,7 @@ The project was built in two versions. Version 1 is a baseline pipeline on a sim
 | Records | 539,383 | 328,521 (after removing cancelled flights) |
 | Delay definition | Provided `Delay` column | `dep_delay > 0` minutes |
 | Final model | Logistic Regression | Random Forest + HistGradientBoosting + KNN ensemble |
-| Details | [v1/README.md] | [v2/README.md](v2/README.md) |
+| Details | [v1/README.md](v1/README.md) | [v2/README.md](v2/README.md) |
 
 ---
 
