@@ -163,7 +163,7 @@ Both models still beat the 63.15% accuracy baseline of the later months, but ROC
 
 The CLI and Tkinter GUI load the saved models and take airline, departure airport, destination airport, month, day, scheduled departure and arrival times, and distance. They show the final prediction, the ensemble score, the threshold, and each model's score.
 
-![Version 2 GUI](demo/gui_v2.png)
+![Version 2 GUI](demo/gui2.png)
 
 ---
 
